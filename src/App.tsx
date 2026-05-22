@@ -20,6 +20,7 @@ import { CaringChart } from './components/CaringChart';
 import { SubscriptionModal } from './components/SubscriptionModal';
 import { CheckoutAndPlanInvite } from './components/CheckoutAndPlanInvite';
 import { ExerciseDetailModal } from './components/ExerciseDetailModal';
+import { OnboardingNameGate } from './components/OnboardingNameGate';
 import { EXERCISES } from './data/exercises';
 import {
   isSupabaseConfigured,
@@ -83,6 +84,26 @@ export default function App() {
       history: []
     };
   });
+
+  const [showNameOnboarding, setShowNameOnboarding] = useState<boolean>(() => {
+    try {
+      const onboarded = localStorage.getItem('co_em_onboarded_name');
+      return !onboarded;
+    } catch {
+      return true;
+    }
+  });
+
+  const handleOnboardingComplete = (name: string) => {
+    setProfile(prev => ({
+      ...prev,
+      name: name
+    }));
+    try {
+      localStorage.setItem('co_em_onboarded_name', 'true');
+    } catch {}
+    setShowNameOnboarding(false);
+  };
 
   const [activeRoutine, setActiveRoutine] = useState<Routine | null>(null);
   const [isPlayingRoutine, setIsPlayingRoutine] = useState(false);
@@ -525,6 +546,10 @@ export default function App() {
   // Calculate plan status days
   const planTotalDays = profile.selectedPlan === '7day' ? 7 : 3;
   const planCompletedDays = Math.min(planTotalDays, profile.completedDaysCount);
+
+  if (showNameOnboarding) {
+    return <OnboardingNameGate onComplete={handleOnboardingComplete} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#fff8f5] text-[#2D3436] font-sans pb-28">

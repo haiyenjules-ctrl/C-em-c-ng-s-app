@@ -3,8 +3,8 @@ import { Exercise, UserProfile, RoutineSession } from '../types';
 import { EXERCISES } from '../data/exercises';
 
 // Clean up potential quotation marks and white spaces from variables injected via process/env
-const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const rawUrl = (import.meta as any).env.VITE_SUPABASE_URL || '';
+const rawKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY || '';
 
 export const supabaseUrl = rawUrl.trim().replace(/^['"]|['"]$/g, '');
 export const supabaseAnonKey = rawKey.trim().replace(/^['"]|['"]$/g, '');
