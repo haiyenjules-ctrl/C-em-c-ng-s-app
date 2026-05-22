@@ -1,0 +1,8 @@
+{
+  "name": "Cô Em Công Sở",
+  "description": "Người đồng nghiệp \"quốc dân\" xinh khéo, mặn mà, giúp bạn giãn cơ và mát-xa xóa tan cơn đau mỏi mệt ngay tại chỗ làm!",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
