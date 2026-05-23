@@ -10,12 +10,14 @@ interface MascotCharacterProps {
   pose?: 'sticker' | 'expert' | 'exercise';
   speechBubble?: string;
   className?: string;
+  imageUrl?: string;
 }
 
 export const MascotCharacter: React.FC<MascotCharacterProps> = ({
   pose = 'sticker',
   speechBubble,
   className = '',
+  imageUrl,
 }) => {
   // Cartoon Image URLs from the brand direction mockup
   const imageUrls = {
@@ -51,10 +53,15 @@ export const MascotCharacter: React.FC<MascotCharacterProps> = ({
       >
         <div className="w-40 h-40 md:w-48 md:h-48 rounded-full bg-[#ffcba4] p-1 shadow-lg overflow-hidden border-2 border-[#7c5637]">
           <img
-            src={imageUrls[pose]}
+            src={imageUrl || imageUrls[pose]}
             alt="Cô Em Công Sở Cartoon Mascot"
             className="w-full h-full object-cover rounded-full"
             referrerPolicy="no-referrer"
+            onError={(e) => {
+              if (imageUrl) {
+                (e.target as HTMLImageElement).src = imageUrls[pose];
+              }
+            }}
           />
         </div>
         {/* Playful mini badge sticker */}

@@ -55,10 +55,27 @@ const MASCOT_QUOTES = [
   'Deadline dập dồn dằn vặt xương hông rồi đúng hơm cưng ơi? Đừng có bẻ lưng răng rắc gãy cốt sườn! Vào đây Cô Em trị liệu xịn xò nè!',
   'Dòm màn hình riết mắt dại như gà đực rồi đó nha! Úp tay sưởi ấm bọng mắt tầm 30 giây để khôi phục thần nhãn đi nè!',
   'Đau ở đâu, Cô Em bứng sạch đau nhức ở đó cho nha! Task việc thì vô tận chớ cột sống thắt lưng có một cái hà!',
-  'Sếp mới thúc task hả? Thở bong bóng trút mệt mỏi ngay đi kẻo bốc quả đầu óc lầm lỡ đó nhen đồng nghiệp thân yêu!'
+  'Sếp dí deadline ngập đầu đúng hơm? Thôi vô đây hít một hơi thiệt sâu, thở ra một cái vèo cho nhẹ cái bụng kẻo stress bốc hỏa hủy hoại nhan sắc đó nhen!',
+  'Alo nghe rõ trả lời dợ cưng? Điên cái đầu, nát cái óc vì họp hành xà lơ đúng hơm? Để đầu bốc hỏa vầy là dễ bốc đồng lắm nha, mau nhón chân bóp gáy xoa thái dương cùng Cô Em cho thanh thản trí óc đi nè!',
+  'Ê nha, bàn tay vàng gõ phím cành cạch rinh KPI mà cái cổ tay tê rần, ngón tay cứng đơ như khúc gỗ rồi đúng không? Vào mở khớp, căng gân cổ tay gấp kẻo tay biến hình thành càng cua lóng ngóng gõ lộn mail sếp đó nhen!'
+];
+
+const WELCOME_MASCOT_URLS = [
+  'https://ihlgukovgjzunebsjmhs.supabase.co/storage/v1/object/public/mascot/daily/day_0.png',
+  'https://ihlgukovgjzunebsjmhs.supabase.co/storage/v1/object/public/mascot/daily/day_1.png',
+  'https://ihlgukovgjzunebsjmhs.supabase.co/storage/v1/object/public/mascot/daily/day_2.png',
+  'https://ihlgukovgjzunebsjmhs.supabase.co/storage/v1/object/public/mascot/daily/day_3.png',
+  'https://ihlgukovgjzunebsjmhs.supabase.co/storage/v1/object/public/mascot/daily/day_4.png',
+  'https://ihlgukovgjzunebsjmhs.supabase.co/storage/v1/object/public/mascot/daily/day_5.png',
+  'https://ihlgukovgjzunebsjmhs.supabase.co/storage/v1/object/public/mascot/daily/day_6.png',
 ];
 
 export default function App() {
+  const [welcomeMascotUrl] = useState(() => {
+    return WELCOME_MASCOT_URLS[
+      Math.floor(Math.random() * WELCOME_MASCOT_URLS.length)
+    ];
+  });
   const [activeTab, setActiveTab] = useState<'today' | 'relief' | 'progress' | 'profile'>('today');
   const [assessment, setAssessment] = useState<UserAssessment | null>(() => {
     try {
@@ -648,6 +665,7 @@ export default function App() {
                       pose="expert"
                       speechBubble={motto}
                       className="shrink-0 scale-95"
+                      imageUrl={welcomeMascotUrl}
                     />
                     <div className="space-y-4 text-center md:text-left flex-1 bg-[#FFFBF2]">
                       <div className="space-y-1">
@@ -655,11 +673,11 @@ export default function App() {
                           Chào ngày mới sảng khoái
                         </span>
                         <h2 className="font-extrabold text-2xl text-[#2D3436]">
-                          Chào thân thương, {profile.name}!
+                          Hé nhô {profile.name} thân iu!
                         </h2>
                       </div>
                       <p className="text-xs text-gray-600 leading-relaxed font-bold">
-                        Hôm nay bạn tập luyện được <strong className="text-[#EE6C4D] text-sm font-black">{profile.totalMinutes} phút</strong> tích hợp sương sương rồi đó. Hãy kiên trì chăm sóc cột sống của mình đều đặn từng hiệp nha!
+                        U là trời, mới dực sương sương được <strong className="text-[#EE6C4D] text-sm font-black">{profile.totalMinutes} phút</strong> dãn cơ thôi đó! Ráng lo cho cái cột sống lành lặn chứ đừng gãy gánh giữa dòng deadline nha cưng!
                       </p>
                     </div>
                   </div>
