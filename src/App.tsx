@@ -836,7 +836,10 @@ export default function App() {
                       Cô em có sẵn 30+ bài tự luyện cấp tốc cho từng vùng kẹt khí. Nhấn đại một bài là làm tức khắc mướt mườn mượt nha!
                     </p>
                   </div>
-                  <QuickReliefSearch onSelectExercise={setActiveDetailExercise} />
+                  <QuickReliefSearch
+                    exercises={dbExercises}
+                    onSelectExercise={setActiveDetailExercise}
+                  />
                 </div>
               )}
 

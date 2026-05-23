@@ -5,14 +5,15 @@
 
 import React, { useState } from 'react';
 import { Exercise } from '../types';
-import { EXERCISES } from '../data/exercises';
 import { Search, MapPin, Clock, Flame, AlertCircle, Sparkles, Heart } from 'lucide-react';
 
 interface QuickReliefSearchProps {
+  exercises: Exercise[];
   onSelectExercise: (exercise: Exercise) => void;
 }
 
 export const QuickReliefSearch: React.FC<QuickReliefSearchProps> = ({
+  exercises,
   onSelectExercise,
 }) => {
   const [query, setQuery] = useState('');
@@ -62,7 +63,7 @@ export const QuickReliefSearch: React.FC<QuickReliefSearchProps> = ({
   };
 
   // Filtering exercises
-  const filteredExercises = EXERCISES.filter((ex) => {
+  const filteredExercises = exercises.filter((ex) => {
     const matchesSearch =
       query === '' ||
       ex.name.toLowerCase().includes(query.toLowerCase()) ||
