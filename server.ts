@@ -135,10 +135,10 @@ function generateRuleBasedRoutine(assessment: UserAssessment, currentExercises: 
 
   return {
     id: `routine_fallback_${Date.now()}`,
-    name: `Routine ${durationMin} Phút Giải Tỏa ${painArea || "Cơ Thể"}`,
-    description: `Một routine cấp cứu tinh tế và an sau, kết hợp nhanh chóng động tác thư dãn tại chỗ.`,
+    name: `Cấu Trình ${durationMin} Phút Chữa Cháy Vùng ${painArea || "Cơ Thể"}`,
+    description: `Đơn kê dãn cơ cấp tốc được Cô Em tinh lọc kỹ càng giúp giải tháo mệt mỏi vùng ${painArea || "cơ thể"} tức thì!`,
     exercises: selected,
-    rationale: `Lớp AI bận họp báo cáo sếp nên "Cô Em" đã tự tay sắm sửa bài này dựa trên vùng đau ${painArea} của bạn, bảo đảm không tập bài quá sức đâu nha!`
+    rationale: `Đồng nghiệp AI đang bận làm báo cáo slide thuyết trình cho sếp rồi! Đích thân Cô Em tự bốc dán giáo án chuẩn chỉnh này cho vùng ${painArea || "mỏi mệt"} của sếp, cứ yên tâm tập theo cho dãn gân giãn cốt nha!`
   };
 }
 

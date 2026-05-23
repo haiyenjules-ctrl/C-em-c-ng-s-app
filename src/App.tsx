@@ -291,10 +291,10 @@ export default function App() {
 
     return {
       id: `local_${Date.now()}`,
-      name: `Routine ${durationMin} Phút Khẩn Cấp Bớt Đau ${painArea}`,
-      description: 'Bài nương chiều phục hồi nhanh tự động tính toán bởi hệ thống hỗ trợ.',
+      name: `Cấu Trình ${durationMin} Phút Chữa Cháy Vùng ${painArea}`,
+      description: `Đơn kê dãn cơ cấp tốc được Cô Em tinh lọc kỹ càng giúp giải cứu vùng ${painArea} tức thì!`,
       exercises: selected,
-      rationale: `Lớp AI bận cướp trà sữa sữa tươi trân châu đường đen rồi! Cô Em tự bốc dán cho bạn mấy bài xịn xò này để bớt nhức cơ ${painArea} kịp cứu bão dự án nha!`
+      rationale: `Thần dân AI bận đi xếp hàng mua trà sữa trân châu rồi! Đừng lo, đích thân Cô Em tự tay bốc dán mấy bài xịn xò này để sếp bớt nhức mỏi vùng ${painArea} kịp chuẩn bị chiến deadline nhen!`
     };
   };
 
