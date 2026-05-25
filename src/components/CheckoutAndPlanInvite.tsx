@@ -25,6 +25,10 @@ interface CheckoutAndPlanInviteProps {
   routineName: string;
   onPlanCreated: (planType: '3day' | '7day', questionnaireAnswers: any) => void;
   onSkipPlan: (painAfter: number) => void;
+  hasActivePlan?: boolean;
+  activePlanType?: '3day' | '7day' | null;
+  activePlanDay?: number;
+  onActivePlanDayCompleted?: (painAfter: number) => void;
 }
 
 export const CheckoutAndPlanInvite: React.FC<CheckoutAndPlanInviteProps> = ({
@@ -32,6 +36,10 @@ export const CheckoutAndPlanInvite: React.FC<CheckoutAndPlanInviteProps> = ({
   routineName,
   onPlanCreated,
   onSkipPlan,
+  hasActivePlan = false,
+  activePlanType = null,
+  activePlanDay = 1,
+  onActivePlanDayCompleted,
 }) => {
   const [step, setStep] = useState<'checkout' | 'invite' | 'questions' | 'success'>('checkout');
   const [feedback, setFeedback] = useState<'better' | 'same' | 'worse' | null>(null);
@@ -63,12 +71,16 @@ export const CheckoutAndPlanInvite: React.FC<CheckoutAndPlanInviteProps> = ({
       alert("Đồng nghiệp ơi, chọn giúp Cô Em một trạng thái cảm nhận nhe!");
       return;
     }
-    // If user says better or same, invite them to create a custom 3 or 7-day plan!
-    if (feedback === 'better' || feedback === 'same') {
-      setStep('invite');
+    if (hasActivePlan) {
+      setStep('success');
     } else {
-      // If worse, go back or trigger safety checkout skip directly
-      onSkipPlan(painAfter);
+      // If user says better or same, invite them to create a custom 3 or 7-day plan!
+      if (feedback === 'better' || feedback === 'same') {
+        setStep('invite');
+      } else {
+        // If worse, go back or trigger safety checkout skip directly
+        onSkipPlan(painAfter);
+      }
     }
   };
 
@@ -465,44 +477,88 @@ export const CheckoutAndPlanInvite: React.FC<CheckoutAndPlanInviteProps> = ({
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-6 text-center py-2"
           >
-            <MascotCharacter
-              pose="sticker"
-              speechBubble={
-                q3 === 'strict'
-                  ? 'Kéo quần lên, sườn lưng được dán hói rồi cưng! Nhắc nhở đanh đá kích kích bắt đầu kích hoạt lầy nhầy nha!'
-                  : q3 === 'sweet'
-                  ? 'Cô em đã cất giấu Lộ trình ngọt ngào vào tim rồi nè! Mỗi ngày sếp vào với em tút tát xương cơ nhoa!'
-                  : 'Ghim kế hoạch dẻo dai thành xướng rồi nha đồng nghiệp hỡi! Lên dây cót múa quạt xả mỏi nào!'
-              }
-            />
+            {hasActivePlan ? (
+              <>
+                <MascotCharacter
+                  pose="sticker"
+                  speechBubble="Siu cấp dẻo dai luôn sếp ơi! Tập tành chăm dực vầy là Cô Em cưng sếp xỉu up xỉu down luôn hà!"
+                />
 
-            <div className="space-y-2">
-              <div className="w-16 h-16 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-full flex items-center justify-center mx-auto text-3xl">
-                🏆
-              </div>
-              <h3 className="font-extrabold text-lg text-emerald-800">Khởi Tạo Kế Hoạch Thành Công!</h3>
-              <p className="text-xs text-gray-500 font-bold max-w-sm mx-auto">
-                Lộ trình <strong className="text-[#EE6C4D]">{selectedPlan === '7day' ? '7 Ngày Trẻ Hóa' : '3 Ngày Cứu Cốt'}</strong> của bạn đã được gắn cố định vào trang chủ. Hãy hoàn thành đều đặn nhé!
-              </p>
-            </div>
+                <div className="space-y-2">
+                  <div className="w-16 h-16 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-full flex items-center justify-center mx-auto text-3xl">
+                    🎖️
+                  </div>
+                  <h3 className="font-extrabold text-lg text-emerald-800">Hoàn Thành Ngày {activePlanDay} Theo Lộ Trình!</h3>
+                  <p className="text-xs text-gray-500 font-bold max-w-sm mx-auto">
+                    Chiếc xương sườn kiêu hãnh của sếp đã bớt sầu thảm hơn rồi dấy! Bản đồ dẻo cốt đang dóng ấn ngày thành công!
+                  </p>
+                </div>
 
-            <div className="bg-white p-4.5 rounded-2xl border border-dashed border-emerald-300 text-left space-y-1.5 max-w-sm mx-auto">
-              <span className="text-[10px] font-black text-[#7a5435] uppercase tracking-wider block">📌 Profile Cảm Hứng Phục Hồi:</span>
-              <div className="text-xs space-y-1 font-bold text-gray-700">
-                <p>• Mục tiêu: <span className="text-indigo-600">{selectedPlan === '7day' ? '7 ngày kiên định' : '3 ngày khẩn thở'}</span></p>
-                <p>• Thời lượng ngồi: <span className="text-[#EE6C4D]">{q1 === 'over_8' ? 'Chiến thần sâm húp (>8h)' : q1 === '4_to_8' ? 'Nhân viên siêng năng (4-8h)' : 'Thảnh thơi dạo bộ (<4h)'}</span></p>
-                <p>• Giọng nhắc: <span className="text-emerald-700">{q3 === 'strict' ? 'Đanh đá quất roi' : q3 === 'funny' ? 'Mặn mà hài hước' : 'Nịnh nọt ngọt ngào'}</span></p>
-              </div>
-            </div>
+                <div className="bg-white p-4.5 rounded-2xl border border-dashed border-emerald-300 text-left space-y-1.5 max-w-sm mx-auto">
+                  <span className="text-[10px] font-black text-[#7a5435] uppercase tracking-wider block">📅 Lộ trình hoạt động:</span>
+                  <div className="text-xs space-y-1 font-bold text-gray-700">
+                    <p>• Lộ trình: <span className="text-indigo-600">{activePlanType === '7day' ? '7 Ngày Trẻ Hóa' : '3 Ngày Cấp Tốc'}</span></p>
+                    <p>• Trạng thái: <span className="text-emerald-700">Đã phục hồi xong Ngày {activePlanDay} ({activePlanType === '7day' ? '7' : '3'} ngày)</span></p>
+                  </div>
+                </div>
 
-            <button
-              type="button"
-              id="finish-assessment-plan"
-              onClick={handleDone}
-              className="w-full sm:w-auto px-10 py-3 rounded-full bg-emerald-500 hover:bg-emerald-600 border-2 border-emerald-700 text-white font-black text-sm shadow-md cursor-pointer transition-all active:scale-95 flex items-center justify-center mx-auto gap-2"
-            >
-              Phần thưởng của sếp đây! <Award className="w-4 h-4 text-yellow-200" />
-            </button>
+                <button
+                  type="button"
+                  id="finish-assessment-plan"
+                  onClick={() => {
+                    if (onActivePlanDayCompleted) {
+                      onActivePlanDayCompleted(painAfter);
+                    } else {
+                      onSkipPlan(painAfter);
+                    }
+                  }}
+                  className="w-full sm:w-auto px-10 py-3 rounded-full bg-emerald-500 hover:bg-emerald-600 border-2 border-emerald-700 text-white font-black text-sm shadow-md cursor-pointer transition-all active:scale-95 flex items-center justify-center mx-auto gap-2"
+                >
+                  Đóng Ấn Ngày {activePlanDay} 🏆
+                </button>
+              </>
+            ) : (
+              <>
+                <MascotCharacter
+                  pose="sticker"
+                  speechBubble={
+                    q3 === 'strict'
+                      ? 'Kéo quần lên, sườn lưng được dán hói rồi cưng! Nhắc nhở đanh đá kích kích bắt đầu kích hoạt lầy nhầy nha!'
+                      : q3 === 'sweet'
+                      ? 'Cô em đã cất giấu Lộ trình ngọt ngào vào tim rồi nè! Mỗi ngày sếp vào với em tút tát xương cơ nhoa!'
+                      : 'Ghim kế hoạch dẻo dai thành xướng rồi nha đồng nghiệp hỡi! Lên dây cót múa quạt xả mỏi nào!'
+                  }
+                />
+
+                <div className="space-y-2">
+                  <div className="w-16 h-16 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-full flex items-center justify-center mx-auto text-3xl">
+                    🏆
+                  </div>
+                  <h3 className="font-extrabold text-lg text-emerald-800">Khởi Tạo Kế Hoạch Thành Công!</h3>
+                  <p className="text-xs text-gray-500 font-bold max-w-sm mx-auto">
+                    Lộ trình <strong className="text-[#EE6C4D]">{selectedPlan === '7day' ? '7 Ngày Trẻ Hóa' : '3 Ngày Cứu Cốt'}</strong> của bạn đã được gắn cố định vào trang chủ. Hãy hoàn thành đều đặn nhé!
+                  </p>
+                </div>
+
+                <div className="bg-white p-4.5 rounded-2xl border border-dashed border-emerald-300 text-left space-y-1.5 max-w-sm mx-auto">
+                  <span className="text-[10px] font-black text-[#7a5435] uppercase tracking-wider block">📌 Profile Cảm Hứng Phục Hồi:</span>
+                  <div className="text-xs space-y-1 font-bold text-gray-700">
+                    <p>• Mục tiêu: <span className="text-indigo-600">{selectedPlan === '7day' ? '7 ngày kiên định' : '3 ngày khẩn thở'}</span></p>
+                    <p>• Thời lượng ngồi: <span className="text-[#EE6C4D]">{q1 === 'over_8' ? 'Chiến thần sâm húp (>8h)' : q1 === '4_to_8' ? 'Nhân viên siêng năng (4-8h)' : 'Thảnh thơi dạo bộ (<4h)'}</span></p>
+                    <p>• Giọng nhắc: <span className="text-emerald-700">{q3 === 'strict' ? 'Đanh đá quất roi' : q3 === 'funny' ? 'Mặn mà hài hước' : 'Nịnh nọt ngọt ngào'}</span></p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  id="finish-assessment-plan"
+                  onClick={handleDone}
+                  className="w-full sm:w-auto px-10 py-3 rounded-full bg-emerald-500 hover:bg-emerald-600 border-2 border-emerald-700 text-white font-black text-sm shadow-md cursor-pointer transition-all active:scale-95 flex items-center justify-center mx-auto gap-2"
+                >
+                  Phần thưởng của sếp đây! <Award className="w-4 h-4 text-yellow-200" />
+                </button>
+              </>
+            )}
           </motion.div>
         )}
 

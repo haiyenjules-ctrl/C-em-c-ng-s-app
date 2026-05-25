@@ -70,6 +70,146 @@ const WELCOME_MASCOT_URLS = [
   'https://ihlgukovgjzunebsjmhs.supabase.co/storage/v1/object/public/mascot/daily/day_6.png',
 ];
 
+export function getRoutineForPlanAndDay(
+  planType: '3day' | '7day',
+  day: number,
+  exercisesList: Exercise[],
+  history: RoutineSession[] = []
+): Routine {
+  // day is 1-based (1, 2, 3...)
+  let selected: Exercise[] = [];
+  let name = '';
+  let description = '';
+  let rationale = '';
+
+  // Calculate recommendation score for an exercise based on user workout history
+  const scoreExercise = (ex: Exercise): number => {
+    let score = 10; // Base score
+    if (!history || history.length === 0) return score;
+
+    history.forEach((session) => {
+      // Completed successfully adds points
+      if (session.completedExercises && session.completedExercises.includes(ex.id)) {
+        score += 5;
+        // Excellent pain relief gives high priority
+        if (session.painBefore > session.painAfter) {
+          score += 8;
+        }
+      }
+      // Skipped exercises lose priority
+      if (session.skippedExercises && session.skippedExercises.includes(ex.id)) {
+        score -= 4;
+      }
+      // Painful exercises get heavily penalized
+      if (session.painfulExercises && session.painfulExercises.includes(ex.id)) {
+        score -= 15;
+      }
+    });
+    return score;
+  };
+
+  const filterByArea = (areas: string[], limit: number = 3) => {
+    const matched = exercisesList.filter((ex) => 
+      areas.map(a => a.toLowerCase()).includes(ex.area.toLowerCase())
+    );
+
+    // Sort exercises based on history score descending
+    const scoredEx = matched.map((ex) => ({
+      ex,
+      score: scoreExercise(ex),
+    }));
+
+    scoredEx.sort((a, b) => b.score - a.score);
+
+    return scoredEx.slice(0, limit).map(item => item.ex);
+  };
+
+  if (planType === '3day') {
+    const currentDay = ((day - 1) % 3) + 1;
+    if (currentDay === 1) {
+      name = 'Ngày 1: Tiêu Diệt "Cổ Rùa" Gù Chữ C';
+      description = 'Giải nén chiếc cổ chịu mỏi cực hạn từ màn hình laptop/điện thoại dốc hết tim gan.';
+      rationale = 'Cô Em đặc chế bài này nhằm xả hết chèn ép dây thần kinh vùng cổ vai gáy cho sếp sấm sét ngay ngày đầu tiên!';
+      selected = filterByArea(['Cổ vai gáy', 'Đầu'], 3);
+    } else if (currentDay === 2) {
+      name = 'Ngày 2: Cứu Vớt Thắt Lưng Rạn Rứt';
+      description = 'Dãn eo sườn căng đầy, giải phóng năng lượng trì trệ từ ghế văn phòng cứng nhắc.';
+      rationale = 'Lưng mỏi rụng rời do ghim ghế hằng giờ? Đã có Cô Em lo, bài dãn liên sườn này sẽ giúp thắt lưng sếp nhẹ tênh!';
+      selected = filterByArea(['Thắt lưng', 'Lưng trên'], 3);
+    } else {
+      name = 'Ngày 3: Khai Sáng Thần Nhãn, Nạp Kính Quang';
+      description = 'Úp lòng bàn tay sưởi ấm màng bọc mắt, luyện liếc nhìn đa chiều thông tuệ.';
+      rationale = 'Bug dí tưng bừng làm mắt mờ lòa? Úp tay xoa mắt và hít thở nhẹ nhàng cùng Cô Em để thắp lại ánh sáng tìm bug nha!';
+      selected = filterByArea(['Mắt', 'Đầu'], 3);
+    }
+  } else {
+    const currentDay = ((day - 1) % 7) + 1;
+    switch (currentDay) {
+      case 1:
+        name = 'Ngày 1: Hóa giải sút gáy gót, xoa bóp đầu sọ';
+        description = 'Thư giãn xoay ấn huyệt chẩm gáy xoa dịu stress tức thì vùng gáy.';
+        rationale = 'Chào ngày đầu tiên của lộ trình 7 ngày! Cô Em nắn nót dâng sếp bài giải tỏa áp lực đỉnh đầu cực sướng nhen!';
+        selected = filterByArea(['Cổ vai gáy', 'Đầu'], 3);
+        break;
+      case 2:
+        name = 'Ngày 2: Vá dãn liên sườn bả vai mỏi nhừ';
+        description = 'Mở rộng bả vai giải phóng điểm tắc cơ hình trám phía sau lưng.';
+        rationale = 'Ngày thứ 2, bả vai sếp mỏi sụm vì ôm chuột cả ngày sẽ được kéo giãn toàn phần để trả lại năng lượng phăm phăm!';
+        selected = filterByArea(['Lưng trên'], 3);
+        break;
+      case 3:
+        name = 'Ngày 3: Khớp tay bệ phóng di chuột êm ái';
+        description = 'Xoay gân cổ tay, nhấc ngón xả bớt hội chứng ống cổ tay gõ phím.';
+        rationale = 'Cổ tay sếp gõ phím mỏi đơ tê tái? Ngày thứ 3 này Cô Em cứu bồ tức thì tránh xa tê mỏi cơ khớp ngón nha!';
+        selected = filterByArea(['Cổ tay'], 3);
+        break;
+      case 4:
+        name = 'Ngày 4: Ưỡn ngực xòe căng bẻ xiêu cái gù';
+        description = 'Đẩy ngược bả vai cản gù vai khòm cứu vãn lồng ngực gò bó.';
+        rationale = 'Ngồi gù lưng như tôm luộc lâu ngày rất hẹp thở. Bài tập ngày thứ 4 của Cô Em mở tung lồng ngực cho sếp trút hết khí lực mỏi!';
+        selected = filterByArea(['Lưng trên', 'Cổ vai gáy'], 3);
+        break;
+      case 5:
+        name = 'Ngày 5: Dãn liên hông xua tan mệt rã rời';
+        description = 'Mở khớp hông chậu kẹt khí bách tắc do mông ghim ghế suốt ngày mỏi sụm, thuyên giảm lập tức!';
+        rationale = 'Chiếc hông ê nhức do dán mông chặt vào ghế? Hôm nay Cô Em nâng cấp cơ bắp liên sườn hông dẻo dai như vũ công!';
+        selected = filterByArea(['Thắt lưng'], 3);
+        break;
+      case 6:
+        name = 'Ngày 6: Khai tinh thần nhãn sáng rực tìm bug';
+        description = 'Bảo dưỡng nhãn cầu cùng chuỗi liếc mắt dẻo cốt thư giãn nhẹ nhàng.';
+        rationale = 'Sắp về đích rồi sếp ơi! Đôi mắt mệt lử sau cả tuần sẽ được Cô Em tưới mát mướt mát để sẵn sàng xõa cuối tuần!';
+        selected = filterByArea(['Mắt'], 3);
+        break;
+      case 7:
+      default:
+        name = 'Ngày 7: Hồi phục tối thượng, gân cốt bất tử! 🧘‍♀️';
+        description = 'Đại công cáo thành, tổng hợp các bài thở sảng khoái và dãn sâu hồi sinh cơ thể.';
+        rationale = 'Ngày cuối cùng vinh quang! Sếp đã vượt qua nghịch cảnh gãy gáy văn phòng. Cô Em dâng trọn bộ giáo án kiêu hùng này để sếp thăng hoa cảm xúc!';
+        selected = [
+          ...filterByArea(['Cổ vai gáy'], 1),
+          ...filterByArea(['Thắt lưng'], 1),
+          ...filterByArea(['Mắt'], 1)
+        ];
+        break;
+    }
+  }
+
+  // Detect if any exercises were actually personalized based on historical feedback
+  const hasHistoryFeedback = history && history.length > 0 && selected.some(ex => scoreExercise(ex) !== 10);
+  if (hasHistoryFeedback) {
+    rationale += ' ✨ Lộ trình này đã được Cô Em cá nhân hóa thông minh dựa trên lịch sử tập luyện của sếp (ưu tiên các động tác sếp dễ dực, thích hợp và dạn dĩ bớt đau nhất nhé)!';
+  }
+
+  return {
+    id: `plan_${planType}_day_${day}_${Date.now()}`,
+    name,
+    description,
+    exercises: selected.length > 0 ? selected : exercisesList.slice(0, 3),
+    rationale
+  };
+}
+
 export default function App() {
   const [welcomeMascotUrl] = useState(() => {
     return WELCOME_MASCOT_URLS[
@@ -218,6 +358,33 @@ export default function App() {
       saveUserProfileToSupabase(profile);
     }
   }, [profile]);
+
+  // Load active plan daily routine automatically on mount or day change
+  useEffect(() => {
+    const hasCompletedToday = profile.history.some(h => {
+      return new Date(h.createdAt).toDateString() === new Date().toDateString();
+    });
+    if (profile.selectedPlan && !hasCompletedToday && !activeRoutine && !isGenerating && dbExercises.length > 0) {
+      const nextDayNum = profile.completedDaysCount + 1;
+      const totalDays = profile.selectedPlan === '7day' ? 7 : 3;
+      if (nextDayNum <= totalDays) {
+        const routineForToday = getRoutineForPlanAndDay(profile.selectedPlan, nextDayNum, dbExercises, profile.history);
+        setActiveRoutine(routineForToday);
+        const areaToAreaMap: Record<string, string> = {
+          '3day': nextDayNum === 1 ? 'Cổ vai gáy' : nextDayNum === 2 ? 'Thắt lưng' : 'Mắt',
+          '7day': nextDayNum === 1 ? 'Cổ vai gáy' : nextDayNum === 2 ? 'Lưng trên' : nextDayNum === 3 ? 'Cổ tay' : nextDayNum === 4 ? 'Lưng trên' : nextDayNum === 5 ? 'Thắt lưng' : nextDayNum === 6 ? 'Mắt' : 'Cổ vai gáy'
+        };
+        const currentArea = areaToAreaMap[profile.selectedPlan] || 'Cổ vai gáy';
+        setAssessment({
+          painArea: currentArea,
+          painScore: 5,
+          location: 'Văn phòng',
+          availableTime: 5,
+          redFlags: []
+        });
+      }
+    }
+  }, [profile.selectedPlan, profile.completedDaysCount, profile.history, dbExercises, activeRoutine, isGenerating]);
 
   // Request Express server backend routine generation using Gemini API
   const handleRequestRoutine = async (currentAssessment: UserAssessment) => {
@@ -413,6 +580,59 @@ export default function App() {
         planChoice: profile.selectedPlan || 'none',
         exercisesCount: newSession.completedExercises.length,
         durationSeconds: newSession.durationSpent
+      });
+    }
+
+    setCheckoutSession(null);
+    setActiveRoutine(null);
+    setActiveTab('today');
+  };
+
+  const saveActivePlanDayCompletion = (
+    sessionDetails: {
+      completedIds: string[];
+      skippedIds: string[];
+      painfulIds: string[];
+      durationSpent: number;
+      routineName: string;
+    },
+    painAfter: number
+  ) => {
+    // Create session record
+    const newSession: RoutineSession = {
+      routineId: activeRoutine?.id || 'plan_day',
+      painBefore: assessment?.painScore || 5,
+      painAfter: painAfter,
+      completedExercises: sessionDetails.completedIds,
+      skippedExercises: sessionDetails.skippedIds,
+      painfulExercises: sessionDetails.painfulIds,
+      createdAt: new Date().toISOString(),
+      durationSpent: sessionDetails.durationSpent
+    };
+
+    const addedMinutes = Math.ceil(sessionDetails.durationSpent / 60) || 1;
+    const isNewDay = profile.history.length === 0 || 
+      new Date(profile.history[0].createdAt).toDateString() !== new Date().toDateString();
+
+    setProfile((prev) => {
+      const isCompleted = prev.history.some(h => new Date(h.createdAt).toDateString() === new Date().toDateString());
+      // Increment completedDaysCount only if they didn't train today yet (prevent multi-increment on same day)
+      const nextCompletedCount = isCompleted ? prev.completedDaysCount : prev.completedDaysCount + 1;
+      return {
+        ...prev,
+        streak: isNewDay ? prev.streak + 1 : prev.streak,
+        totalMinutes: prev.totalMinutes + addedMinutes,
+        completedDaysCount: nextCompletedCount,
+        history: [newSession, ...prev.history]
+      };
+    });
+
+    if (isSupabaseConfigured()) {
+      saveRoutineSessionToSupabase(newSession);
+      trackEventInSupabase('plan_day_completed', {
+        planType: profile.selectedPlan,
+        day: profile.completedDaysCount + 1,
+        durationSeconds: sessionDetails.durationSpent
       });
     }
 
@@ -619,11 +839,17 @@ export default function App() {
               <CheckoutAndPlanInvite
                 painBefore={assessment?.painScore || 5}
                 routineName={checkoutSession.routineName}
+                hasActivePlan={!!profile.selectedPlan}
+                activePlanType={profile.selectedPlan}
+                activePlanDay={profile.completedDaysCount + 1}
                 onPlanCreated={(planType, answers) => {
                   saveCompletedSessionAndCreatePlan(checkoutSession, planType, answers);
                 }}
                 onSkipPlan={(painAfter) => {
                   saveSessionAndSkipPlan(checkoutSession, painAfter);
+                }}
+                onActivePlanDayCompleted={(painAfter) => {
+                  saveActivePlanDayCompletion(checkoutSession, painAfter);
                 }}
               />
             </motion.div>
@@ -682,166 +908,261 @@ export default function App() {
                     </div>
                   </div>
 
-                  {!assessment ? (
-                    /* Show 3 compact questions + Inline Search directly in clean flat sequence */
-                    <div className="space-y-6">
-                      <div className="bg-white border-2 border-[#7c5637] rounded-3xl p-5 md:p-6 shadow-md space-y-5">
-                        <div className="border-b-2 border-dashed border-gray-100 pb-2">
-                          <h3 className="font-black text-sm text-[#7a5435] uppercase tracking-wider flex items-center gap-1.5">
-                            🏥 Hôm nay bạn đau mỏi như thế nào dợ?
-                          </h3>
-                        </div>
-                        <AssessmentFlow onComplete={handleRequestRoutine} />
-                      </div>
+                  {(() => {
+                    const hasCompletedToday = profile.history.some(h => {
+                      return new Date(h.createdAt).toDateString() === new Date().toDateString();
+                    });
+                    const totalDays = profile.selectedPlan === '7day' ? 7 : 3;
+                    const isPlanFinished = profile.selectedPlan && profile.completedDaysCount >= totalDays;
 
-                      {/* Direct inline layout search link button */}
-                      <div className="text-center pt-2 pb-1">
-                        <button
-                          onClick={() => setActiveTab('relief')}
-                          className="px-6 py-3.5 bg-white border-2 border-[#7c5637] hover:border-[#EE6C4D] hover:text-[#EE6C4D] text-[#7c5637] rounded-full text-xs font-black shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 mx-auto cursor-pointer"
-                        >
-                          🔍 Tìm kiếm bài tập nhanh →
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    /* Active Generated Routine showcase block */
-                    <div className="space-y-4">
-                      {isGenerating ? (
-                        /* AI GENERATING TRANSITION LOADER PANEL */
-                        <div className="bg-[#FFFBF2] border-2 border-dashed border-[#FBAE94] rounded-3xl p-10 text-center space-y-6">
-                          <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
-                            <RefreshCw className="w-12 h-12 text-[#EE6C4D] animate-spin" />
-                            <span className="absolute text-xl">☕</span>
-                          </div>
-                          <div className="space-y-2">
-                            <span className="bg-[#BCEDDA] text-[#406d60] border border-[#a1d0c1] px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider font-extrabold pb-0.5">
-                              Cô Em AI đang múa cọ pha trà sữa...
-                            </span>
-                            <h4 className="font-black text-sm text-[#2D3436] pt-1">
-                              Sấp ngửa soạn bài nương chiều cột sống cho cưng đây!
-                            </h4>
-                            <p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed italic font-semibold">
-                              "Mát-xa cung mọc, bóp vai bệ vệ, giãn gối gầy hông... Chờ Cô Em tí ti thôi để bưng bài dọn mỏi mệt tới sếp nhé!"
+                    if (isPlanFinished) {
+                      return (
+                        <div className="bg-amber-50 border-2 border-[#A16207] rounded-3xl p-6 text-center space-y-4 shadow-md max-w-lg mx-auto">
+                          <div className="text-4xl">👑</div>
+                          <div className="space-y-1">
+                            <h3 className="font-serif font-black text-lg text-amber-900">Đại Công Cáo Thành!</h3>
+                            <p className="text-xs text-gray-600 font-semibold leading-relaxed">
+                              Sếp <strong className="text-amber-800">{profile.name}</strong> ơi, em cúi đầu bày tỏ lòng kính trọng sâu sắc! Sếp đã vượt qua nghịch cảnh để xuất sắc chinh phục trọn vẹn lộ trình <strong className="text-amber-900">{profile.selectedPlan === '7day' ? '7 Ngày Trẻ Hóa' : '3 Ngày Cấp Tốc'}</strong> rồi đó!
                             </p>
                           </div>
-                        </div>
-                      ) : activeRoutine ? (
-                        /* Generated routine ready to play */
-                        <div className="bg-white border-2 border-[#2D3436] rounded-3xl p-6 shadow-[5px_5px_0px_0px_rgba(45,52,54,1)] space-y-6">
-                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                            {/* Left Column: Mascot & Professional Speech prescription */}
-                            <div className="lg:col-span-5 flex flex-col justify-between bg-[#FFFBF2] border-2 border-[#2D3436] rounded-2xl p-5 space-y-4">
-                              <div className="space-y-3">
-                                <span className="bg-[#FFD2E5] text-[#2D3436] border-2 border-[#2D3436] px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider inline-block shadow-[1.5px_1.5px_0px_0px_rgba(45,52,54,1)]">
-                                  Lời khuyên từ Cô Em 🌸
-                                </span>
-                                <h4 className="font-sans font-black text-base text-[#7c5637] leading-snug">
-                                  {activeRoutine.name}
-                                </h4>
-                                <p className="text-xs text-gray-600 leading-relaxed font-bold">
-                                  “{activeRoutine.description}”
-                                </p>
-                              </div>
-
-                              <div className="border-t border-dashed border-slate-300 pt-3 space-y-2">
-                                <span className="text-[10px] font-black text-gray-400 uppercase block">
-                                  Liệu trình khuyên dùng
-                                </span>
-                                <p className="text-xs text-slate-700 italic font-medium leading-relaxed bg-white/70 p-3 rounded-xl border border-slate-200">
-                                  “{activeRoutine.rationale}”
-                                </p>
-                              </div>
-
-                              <div className="flex justify-center pt-2">
-                                <div className="w-20 h-20 rounded-full bg-[#ffcba4] p-0.5 border-2 border-[#2D3436] overflow-hidden">
-                                  <img
-                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPLzWgvoaGl2lSjsJuS2MHid6CVqngP7R2bSkqpYfZBNIXJ1rHH7WgGqj1dNeb5XyiX5kT4Ce9vEkVyeh0gIrhPb57eNhpdz-v8zV-MyOI1rBnHA2LJTmCF8UIzLH4NbT-H5lOWNUb5AWv6CamMIqRA9UOrDeON-S6v6kukFI1-nksv5pRQlvzVryInW4KhoyBV9WeOAd_zwFxgf7tSPVtYnQB1r9AxQrjWcQJ7pHDsK7ZvRF43ZW3jTbkDfHw4QBfoWFSJDRG6__a"
-                                    alt="Mascot avatar"
-                                    className="w-full h-full object-cover"
-                                    referrerPolicy="no-referrer"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Right Column: Workout schedule sequence list */}
-                            <div className="lg:col-span-7 flex flex-col justify-between space-y-4">
-                              <div className="space-y-3">
-                                <div className="flex justify-between items-center flex-wrap gap-2">
-                                  <span className="text-[11px] font-black text-gray-400 uppercase tracking-wider">
-                                    Danh Sách Tuyển Tập Động Tác
-                                  </span>
-                                  <span className="bg-[#BCEDDA] text-[#2D3436] border-2 border-[#2D3436] px-2.5 py-0.5 rounded-lg text-[10px] font-black shadow-[1.5px_1.5px_0px_0px_rgba(45,52,54,1)]">
-                                    Tổng: {activeRoutine.exercises.reduce((sum, e) => sum + e.duration, 0)}s • {activeRoutine.exercises.length} bài
-                                  </span>
-                                </div>
-
-                                <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
-                                  {activeRoutine.exercises.map((ex, idx) => (
-                                    <div
-                                      key={ex.id}
-                                      onClick={() => setActiveDetailExercise(ex)}
-                                      className="p-3 bg-slate-50 hover:bg-[#FFFBF2] rounded-xl border-2 border-slate-200 hover:border-[#EE6C4D] flex items-center gap-3 mr-1 cursor-pointer transition-all active:scale-[0.99] group"
-                                      title="Xem chi tiết động tác"
-                                    >
-                                      <span className="w-6 h-6 rounded-lg bg-[#2D3436] text-white flex items-center justify-center font-black text-xs shrink-0 shadow-[1px_1px_0px_0px_rgba(45,52,54,0.2)] group-hover:bg-[#EE6C4D]">
-                                        {idx + 1}
-                                      </span>
-                                      
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-2">
-                                          <span className="font-extrabold text-xs text-[#2D3436] truncate group-hover:text-[#EE6C4D]">
-                                            {ex.name}
-                                          </span>
-                                          <span className="text-[10px] font-black text-[#EE6C4D] shrink-0">
-                                            ⏱️ {ex.duration}s
-                                          </span>
-                                        </div>
-                                        <p className="text-[10px] text-gray-500 font-medium truncate mt-0.5">
-                                          {ex.description}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-
-                              <div className="space-y-3 pt-2">
-                                <div className="flex flex-col sm:flex-row gap-2">
-                                  <button
-                                    onClick={() => {
-                                      setAssessment(null);
-                                      setActiveRoutine(null);
-                                    }}
-                                    className="px-5 py-3 rounded-full border-2 border-[#2D3436] font-black text-xs hover:bg-gray-100 transition-colors cursor-pointer text-gray-700 bg-white"
-                                  >
-                                    🔄 Khảo sát vùng khác
-                                  </button>
-                                  <button
-                                    onClick={() => setIsPlayingRoutine(true)}
-                                    className="flex-1 bg-[#EE6C4D] text-white border-2 border-[#2D3436] rounded-full py-3.5 text-sm font-black flex items-center justify-center gap-2 shadow-[2px_2px_0px_0px_rgba(45,52,54,1)] hover:bg-[#EE6C4D]/90 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_rgba(45,52,54,1)] transition-all cursor-pointer"
-                                  >
-                                    Bắt đầu Trị Liệu Ngay 🚀
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
+                          <div className="pt-2 flex flex-col sm:flex-row gap-2 justify-center">
+                            <button
+                              onClick={() => {
+                                setProfile(p => ({
+                                  ...p,
+                                  completedDaysCount: 0,
+                                  planStartDate: new Date().toISOString()
+                                }));
+                                setActiveRoutine(null);
+                              }}
+                              className="px-5 py-2.5 rounded-full bg-emerald-500 text-white border-2 border-emerald-700 font-extrabold text-xs hover:bg-emerald-600 transition-all cursor-pointer"
+                            >
+                              🔄 Tập Lại Lộ Trình Này
+                            </button>
+                            <button
+                              onClick={() => {
+                                setProfile(p => ({ ...p, selectedPlan: null, completedDaysCount: 0 }));
+                                setAssessment(null);
+                                setActiveRoutine(null);
+                              }}
+                              className="px-5 py-2.5 rounded-full bg-white text-gray-700 border-2 border-gray-300 font-extrabold text-xs hover:bg-gray-100 transition-all cursor-pointer"
+                            >
+                              🎯 Chọn Lộ Trình Mới
+                            </button>
                           </div>
                         </div>
-                      ) : (
-                        /* Fallback assessment trigger */
-                        <div className="text-center py-6">
-                          <button
-                            onClick={() => handleRequestRoutine(assessment)}
-                            className="px-6 py-3 bg-[#EE6C4D] text-white rounded-full font-black text-sm"
-                          >
-                            Tạo Lại Routine Trị Liệu 🔄
-                          </button>
+                      );
+                    }
+
+                    if (hasCompletedToday) {
+                      return (
+                        <div className="bg-emerald-50 border-2 border-emerald-500 rounded-3xl p-6 text-center space-y-4 shadow-md max-w-lg mx-auto animate-fade-in">
+                          <div className="text-4xl">🎉</div>
+                          <div className="space-y-1">
+                            <h3 className="font-serif font-black text-lg text-emerald-800">Cột Sống Vạn Tuế!</h3>
+                            <p className="text-xs text-gray-600 font-semibold leading-relaxed">
+                              Sếp <strong className="text-emerald-800">{profile.name}</strong> ơi, hôm nay sếp đã xuất sắc rèn dũa xương cốt xong rồi đấy nghen! Chuỗi tự hào <span className="text-[#EE6C4D] font-extrabold">{profile.streak} ngày</span> đã bọc thép an toàn gân cốt.
+                            </p>
+                          </div>
+                          {profile.selectedPlan && (
+                            <div className="bg-white/80 border border-emerald-200 rounded-2xl p-4 text-xs font-semibold text-[#7c5637] space-y-1 inline-block">
+                              <p>• Lộ trình đang chạy: <strong>{profile.selectedPlan === '7day' ? '7 Ngày Trẻ Hóa' : '3 Ngày Cấp Tốc'}</strong></p>
+                              <p>• Tiến trình hoàn thành: <strong>{profile.completedDaysCount}/{totalDays} ngày</strong></p>
+                            </div>
+                          )}
+                          <div className="pt-2 flex flex-col sm:flex-row gap-2 justify-center">
+                            <button
+                              onClick={() => {
+                                setActiveTab('relief');
+                              }}
+                              className="px-5 py-2.5 rounded-full bg-white border border-emerald-300 text-emerald-800 font-extrabold text-xs hover:bg-emerald-100 transition-all cursor-pointer"
+                            >
+                              🔍 Luyện Thêm Bài Lẻ
+                            </button>
+                            {profile.selectedPlan && (
+                              <button
+                                onClick={() => {
+                                  if (confirm('Sếp muốn tạm dừng lộ trình hiện tại để làm bài tập khảo sát đơn lẻ hả dợ?')) {
+                                    setProfile(p => ({ ...p, selectedPlan: null, completedDaysCount: 0 }));
+                                    setAssessment(null);
+                                    setActiveRoutine(null);
+                                  }
+                                }}
+                                className="px-5 py-2.5 rounded-full bg-[#EE6C4D] border border-[#7c5637] text-white font-extrabold text-xs hover:bg-orange-600 transition-all cursor-pointer"
+                              >
+                                ❌ Tách Lộ Trình Hiện Tại
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  )}
+                      );
+                    }
+
+                    return (
+                      <>
+                        {!assessment ? (
+                          /* Show 3 compact questions + Inline Search directly in clean flat sequence */
+                          <div className="space-y-6">
+                            <div className="bg-white border-2 border-[#7c5637] rounded-3xl p-5 md:p-6 shadow-md space-y-5">
+                              <div className="border-b-2 border-dashed border-gray-100 pb-2">
+                                <h3 className="font-black text-sm text-[#7a5435] uppercase tracking-wider flex items-center gap-1.5">
+                                  🏥 Hôm nay bạn đau mỏi như thế nào dợ?
+                                </h3>
+                              </div>
+                              <AssessmentFlow onComplete={handleRequestRoutine} />
+                            </div>
+
+                            {/* Direct inline layout search link button */}
+                            <div className="text-center pt-2 pb-1">
+                              <button
+                                onClick={() => setActiveTab('relief')}
+                                className="px-6 py-3.5 bg-white border-2 border-[#7c5637] hover:border-[#EE6C4D] hover:text-[#EE6C4D] text-[#7c5637] rounded-full text-xs font-black shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 mx-auto cursor-pointer"
+                              >
+                                🔍 Tìm kiếm bài tập nhanh →
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Active Generated Routine showcase block */
+                          <div className="space-y-4">
+                            {isGenerating ? (
+                              /* AI GENERATING TRANSITION LOADER PANEL */
+                              <div className="bg-[#FFFBF2] border-2 border-dashed border-[#FBAE94] rounded-3xl p-10 text-center space-y-6">
+                                <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
+                                  <RefreshCw className="w-12 h-12 text-[#EE6C4D] animate-spin" />
+                                  <span className="absolute text-xl">☕</span>
+                                </div>
+                                <div className="space-y-2">
+                                  <span className="bg-[#BCEDDA] text-[#406d60] border border-[#a1d0c1] px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider font-extrabold pb-0.5">
+                                    Cô Em AI đang múa cọ pha trà sữa...
+                                  </span>
+                                  <h4 className="font-black text-sm text-[#2D3436] pt-1">
+                                    Sấp ngửa soạn bài nương chiều cột sống cho cưng đây!
+                                  </h4>
+                                  <p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed italic font-semibold">
+                                    "Mát-xa cung mọc, bóp vai bệ vệ, giãn gối gầy hông... Chờ Cô Em tí ti thôi để bưng bài dọn mỏi mệt tới sếp nhé!"
+                                  </p>
+                                </div>
+                              </div>
+                            ) : activeRoutine ? (
+                              /* Generated routine ready to play */
+                              <div className="bg-white border-2 border-[#2D3436] rounded-3xl p-6 shadow-[5px_5px_0px_0px_rgba(45,52,54,1)] space-y-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                                  {/* Left Column: Mascot & Professional Speech prescription */}
+                                  <div className="lg:col-span-5 flex flex-col justify-between bg-[#FFFBF2] border-2 border-[#2D3436] rounded-2xl p-5 space-y-4">
+                                    <div className="space-y-3">
+                                      <span className="bg-[#FFD2E5] text-[#2D3436] border-2 border-[#2D3436] px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider inline-block shadow-[1.5px_1.5px_0px_0px_rgba(45,52,54,1)]">
+                                        Lời khuyên từ Cô Em 🌸
+                                      </span>
+                                      <h4 className="font-sans font-black text-base text-[#7c5637] leading-snug">
+                                        {activeRoutine.name}
+                                      </h4>
+                                      <p className="text-xs text-gray-600 leading-relaxed font-bold">
+                                        “{activeRoutine.description}”
+                                      </p>
+                                    </div>
+
+                                    <div className="border-t border-dashed border-slate-300 pt-3 space-y-2">
+                                      <span className="text-[10px] font-black text-gray-400 uppercase block">
+                                        Liệu trình khuyên dùng
+                                      </span>
+                                      <p className="text-xs text-slate-700 italic font-medium leading-relaxed bg-white/70 p-3 rounded-xl border border-slate-200">
+                                        “{activeRoutine.rationale}”
+                                      </p>
+                                    </div>
+
+                                    <div className="flex justify-center pt-2">
+                                      <div className="w-20 h-20 rounded-full bg-[#ffcba4] p-0.5 border-2 border-[#2D3436] overflow-hidden">
+                                        <img
+                                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPLzWgvoaGl2lSjsJuS2MHid6CVqngP7R2bSkqpYfZBNIXJ1rHH7WgGqj1dNeb5XyiX5kT4Ce9vEkVyeh0gIrhPb57eNhpdz-v8zV-MyOI1rBnHA2LJTmCF8UIzLH4NbT-H5lOWNUb5AWv6CamMIqRA9UOrDeON-S6v6kukFI1-nksv5pRQlvzVryInW4KhoyBV9WeOAd_zwFxgf7tSPVtYnQB1r9AxQrjWcQJ7pHDsK7ZvRF43ZW3jTbkDfHw4QBfoWFSJDRG6__a"
+                                          alt="Mascot avatar"
+                                          className="w-full h-full object-cover"
+                                          referrerPolicy="no-referrer"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Right Column: Workout schedule sequence list */}
+                                  <div className="lg:col-span-7 flex flex-col justify-between space-y-4">
+                                    <div className="space-y-3">
+                                      <div className="flex justify-between items-center flex-wrap gap-2">
+                                        <span className="text-[11px] font-black text-gray-400 uppercase tracking-wider">
+                                          Danh Sách Tuyển Tập Động Tác
+                                        </span>
+                                        <span className="bg-[#BCEDDA] text-[#2D3436] border-2 border-[#2D3436] px-2.5 py-0.5 rounded-lg text-[10px] font-black shadow-[1.5px_1.5px_0px_0px_rgba(45,52,54,1)]">
+                                          Tổng: {activeRoutine.exercises.reduce((sum, e) => sum + e.duration, 0)}s • {activeRoutine.exercises.length} bài
+                                        </span>
+                                      </div>
+
+                                      <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+                                        {activeRoutine.exercises.map((ex, idx) => (
+                                          <div
+                                            key={ex.id}
+                                            onClick={() => setActiveDetailExercise(ex)}
+                                            className="p-3 bg-slate-50 hover:bg-[#FFFBF2] rounded-xl border-2 border-slate-200 hover:border-[#EE6C4D] flex items-center gap-3 mr-1 cursor-pointer transition-all active:scale-[0.99] group"
+                                            title="Xem chi tiết động tác"
+                                          >
+                                            <span className="w-6 h-6 rounded-lg bg-[#2D3436] text-white flex items-center justify-center font-black text-xs shrink-0 shadow-[1px_1px_0px_0px_rgba(45,52,54,0.2)] group-hover:bg-[#EE6C4D]">
+                                              {idx + 1}
+                                            </span>
+                                            
+                                            <div className="flex-1 min-w-0">
+                                              <div className="flex items-center justify-between gap-2">
+                                                <span className="font-extrabold text-xs text-[#2D3436] truncate group-hover:text-[#EE6C4D]">
+                                                  {ex.name}
+                                                </span>
+                                                <span className="text-[10px] font-black text-[#EE6C4D] shrink-0">
+                                                  ⏱️ {ex.duration}s
+                                                </span>
+                                              </div>
+                                              <p className="text-[10px] text-gray-500 font-medium truncate mt-0.5">
+                                                {ex.description}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-3 pt-2">
+                                      <div className="flex flex-col sm:flex-row gap-2">
+                                        <button
+                                          onClick={() => {
+                                            setAssessment(null);
+                                            setActiveRoutine(null);
+                                          }}
+                                          className="px-5 py-3 rounded-full border-2 border-[#2D3436] font-black text-xs hover:bg-gray-100 transition-colors cursor-pointer text-gray-700 bg-white"
+                                        >
+                                          🔄 Khảo sát vùng khác
+                                        </button>
+                                        <button
+                                          onClick={() => setIsPlayingRoutine(true)}
+                                          className="flex-1 bg-[#EE6C4D] text-white border-2 border-[#2D3436] rounded-full py-3.5 text-sm font-black flex items-center justify-center gap-2 shadow-[2px_2px_0px_0px_rgba(45,52,54,1)] hover:bg-[#EE6C4D]/90 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_rgba(45,52,54,1)] transition-all cursor-pointer"
+                                        >
+                                          Bắt đầu Trị Liệu Ngay 🚀
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              /* Fallback assessment trigger */
+                              <div className="text-center py-6">
+                                <button
+                                  onClick={() => handleRequestRoutine(assessment)}
+                                  className="px-6 py-3 bg-[#EE6C4D] text-white rounded-full font-black text-sm"
+                                >
+                                  Tạo Lại Routine Trị Liệu 🔄
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
 
@@ -1390,86 +1711,7 @@ export default function App() {
                       </motion.div>
                     )}
 
-                    {/* Supabase Cloud Sync & Metrics Central */}
-                    <div className="border-t pt-4 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-black text-[#7c5637] uppercase tracking-wider flex items-center gap-1">
-                          ☁️ Hệ Tháp Lưu Trữ Supabase Cloud
-                        </label>
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
-                          dbStatus.configured 
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                            : 'bg-amber-50 text-amber-700 border border-amber-200'
-                        }`}>
-                          {dbStatus.configured ? '● Đã Kết Nối' : '○ Ngoại Tuyến (Offline)'}
-                        </span>
-                      </div>
 
-                      <div className="bg-slate-50 border-2 border-slate-200/55 rounded-2xl p-4 text-xs space-y-2.5">
-                        <div className="flex justify-between items-center bg-white border border-slate-205 px-3 py-2 rounded-xl">
-                          <span className="font-bold text-gray-400 text-[10px]">Mã Định Danh Cá Nhân (User ID)</span>
-                          <span className="font-mono text-gray-700 text-[10px] bg-slate-100 px-2 py-0.5 rounded select-all font-semibold">
-                            {getOrGenerateUserId()}
-                          </span>
-                        </div>
-
-                        <p className="text-[10px] text-gray-550 leading-relaxed">
-                          {dbStatus.configured 
-                            ? '🎉 Supabase đã liên kết thành công! Hoạt động như streaks, tiến trình dãn cơ, lịch sử routine, chuyển tab hay lộ trình 3/7 ngày của sếp sẽ tự động đồng bộ hóa lên mây tức thì.' 
-                            : '⚠️ Sếp chưa cài đặt biến môi trường Supabase URL & Anon Key. Ứng dụng đang chạy offline an toàn. Muốn chuyển sang cloud sync, sếp nhấn Settings cài VITE_SUPABASE_URL & VITE_SUPABASE_ANON_KEY nhe!'}
-                        </p>
-
-                        {dbStatus.configured && (
-                          <div className="pt-2 border-t border-dashed border-slate-200 flex flex-col gap-2">
-                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Điều khiển dữ liệu nâng cao</span>
-                            
-                            <div className="flex gap-2">
-                              <button
-                                onClick={async () => {
-                                  if (confirm('Sếp muốn đẩy 50 bài tập phục hồi chính quy gốc lên Supabase để tự sướng/edit từ DB đúng hông?')) {
-                                    setDbStatus(prev => ({ ...prev, syncing: true, message: 'Đang gieo hạt 50 bài tập dãn cơ lên mây...' }));
-                                    const success = await seedExercisesToSupabase();
-                                    if (success) {
-                                      alert('Đã đồng bộ thành công! Sếp có thể tự do chỉnh sửa, bật tắt bài tập trực tiếp từ bảng "exercises" của Supabase dồi á!');
-                                      const fetched = await fetchExercisesFromSupabase();
-                                      setDbExercises(fetched);
-                                      setDbStatus(prev => ({ ...prev, message: `Thành công! Đã đồng bộ ${fetched.length} bài.` }));
-                                    } else {
-                                      alert('Thất bại khi đẩy dữ liệu seeding. Sếp kiểm tra lại RLS hoặc schema bảng exercises trong Supabase nhe!');
-                                    }
-                                    setDbStatus(prev => ({ ...prev, syncing: false }));
-                                  }
-                                }}
-                                disabled={dbStatus.syncing}
-                                className="flex-1 bg-teal-50 hover:bg-teal-100 border-2 border-teal-500 text-teal-800 rounded-xl py-2 px-3 hover:shadow-sm font-black text-[11px] active:scale-95 transition-all text-center cursor-pointer disabled:opacity-50"
-                              >
-                                {dbStatus.syncing ? '⌛ Đang đồng bộ...' : '🚀 Seeding 50 Bài Tập'}
-                              </button>
-
-                              <button
-                                onClick={async () => {
-                                  setDbStatus(prev => ({ ...prev, syncing: true }));
-                                  const fetched = await fetchExercisesFromSupabase();
-                                  setDbExercises(fetched);
-                                  alert(`Đã làm mới thành công ${fetched.length} bài tập từ Supabase!`);
-                                  setDbStatus(prev => ({ ...prev, syncing: false, message: `Khởi tạo xong! Nạp ${fetched.length} bài tập.` }));
-                                }}
-                                disabled={dbStatus.syncing}
-                                className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-gray-700 rounded-xl py-2 px-3.5 font-black text-[11px] active:scale-95 transition-all text-center cursor-pointer disabled:opacity-50"
-                              >
-                                🔄 Làm mới
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        {dbStatus.message && (
-                          <div className="text-[10px] font-bold text-[#EE6C4D] bg-orange-50 border border-orange-100 rounded-lg p-2 flex items-center gap-1 select-all">
-                            <span className="animate-spin text-xs">🌀</span> {dbStatus.message}
-                          </div>
-                        )}
-                      </div>
-                    </div>
 
                     {/* Reset bottom panel */}
                     <div className="border-t pt-4 flex justify-between items-center">
