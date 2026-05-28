@@ -214,7 +214,7 @@ export const RoutinePlayerComponent: React.FC<RoutinePlayerComponentProps> = ({
             <div className="border-t border-dashed border-slate-200 w-full pt-2.5">
               <p className="text-[#bf7135] font-black text-[9px] uppercase tracking-wider mb-1">👉 Thao tác nhanh gọn:</p>
               <p className="text-gray-650 font-bold text-xs leading-relaxed max-w-sm mx-auto">
-                {activeExercise.instructions[0]}
+                {activeExercise.description}
               </p>
             </div>
           </div>
