@@ -1034,5 +1034,49 @@ export const EXERCISES: Exercise[] = [
     ],
     locationStyle: 'Desk',
     type: 'stretch'
+  },
+  {
+    id: 'neck_08',
+    name: 'Rụt vai giải nghiệp',
+    description: 'Tư thế thu cằm ép gáy sửa ngay quả dáng đầu nhô ra trước do dí sát mắt vào màn hình rình bug hay hối deadline.',
+    area: 'Cổ vai gáy',
+    duration: 30,
+    instructions: [
+      'Ngồi thẳng lưng chuẩn chỉnh, mắt nhìn thẳng về phía trước.',
+      'Đặt nhẹ một ngón tay lên cằm để làm mốc định vị.',
+      'Dùng cơ bắp sau cổ đẩy cằm thụt thẳng ra sau (tạo nọng cằm quyến rũ) mà không cúi đầu.',
+      'Giữ tư thế tượng đài hiên ngang này trong 5 giây rồi thả lỏng đưa đầu về vị trí cũ.'
+    ],
+    commonMistakes: [
+      'Cúi gập đầu xuống ngực làm sai lệch khớp trục cổ.',
+      'Ngửa mặt lên trời trông mất vẻ oai vệ.'
+    ],
+    contraindications: [
+      'Cột sống cổ đang chấn thương chưa lành.'
+    ],
+    locationStyle: 'Desk',
+    type: 'mobility'
+  },
+  {
+    id: 'upper_06',
+    name: 'Cúi đầu lạy vạn task',
+    description: 'Ưỡn ngực mở rộng bả vai giải phóng điểm tắc xoắn cơ bả vai do ôm bàn phím liên tùng tục.',
+    area: 'Lưng trên',
+    duration: 40,
+    instructions: [
+      'Đứng hoặc ngồi thẳng lưng, đưa hai tay ra sau lưng đan chặt các ngón tay lại.',
+      'Hít sâu, ưỡn ngực căng tối đa về trước, từ từ kéo hai bả vai ép chặt vào nhau.',
+      'Nâng nhẹ hai cánh tay ra xa khỏi mông cảm nhận vùng lưng trên căng giãn râm ran.',
+      'Giữ tư thế 15-20 giây, thở ra thả lỏng mệt mỏi trôi tuột.'
+    ],
+    commonMistakes: [
+      'Gù lưng dưới nhằm ăn gian biên độ nâng tay.',
+      'Nín thở gồng cứng cổ.'
+    ],
+    contraindications: [
+      'Viêm chấn thương sụn khớp vai cấp tính bộc phát.'
+    ],
+    locationStyle: 'Desk',
+    type: 'stretch'
   }
 ];

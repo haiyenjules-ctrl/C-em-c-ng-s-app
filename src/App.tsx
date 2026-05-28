@@ -20,7 +20,6 @@ import { CaringChart } from './components/CaringChart';
 import { SubscriptionModal } from './components/SubscriptionModal';
 import { CheckoutAndPlanInvite } from './components/CheckoutAndPlanInvite';
 import { ExerciseDetailModal } from './components/ExerciseDetailModal';
-import { OnboardingNameGate } from './components/OnboardingNameGate';
 import { EXERCISES } from './data/exercises';
 import {
   isSupabaseConfigured,
@@ -124,13 +123,22 @@ export function getRoutineForPlanAndDay(
     return scoredEx.slice(0, limit).map(item => item.ex);
   };
 
+  const getSpecificExercises = (ids: string[]): Exercise[] => {
+    return ids
+      .map(id => exercisesList.find(ex => ex.id === id))
+      .filter((ex): ex is Exercise => !!ex);
+  };
+
   if (planType === '3day') {
     const currentDay = ((day - 1) % 3) + 1;
     if (currentDay === 1) {
       name = 'Ngày 1: Tiêu Diệt "Cổ Rùa" Gù Chữ C';
       description = 'Giải nén chiếc cổ chịu mỏi cực hạn từ màn hình laptop/điện thoại dốc hết tim gan.';
       rationale = 'Cô Em đặc chế bài này nhằm xả hết chèn ép dây thần kinh vùng cổ vai gáy cho sếp sấm sét ngay ngày đầu tiên!';
-      selected = filterByArea(['Cổ vai gáy', 'Đầu'], 3);
+      selected = getSpecificExercises(['neck_08', 'neck_02', 'upper_06']);
+      if (selected.length < 3) {
+        selected = [...selected, ...filterByArea(['Cổ vai gáy', 'Đầu'], 3 - selected.length)];
+      }
     } else if (currentDay === 2) {
       name = 'Ngày 2: Cứu Vớt Thắt Lưng Rạn Rứt';
       description = 'Dãn eo sườn căng đầy, giải phóng năng lượng trì trệ từ ghế văn phòng cứng nhắc.';
@@ -149,7 +157,10 @@ export function getRoutineForPlanAndDay(
         name = 'Ngày 1: Hóa giải sút gáy gót, xoa bóp đầu sọ';
         description = 'Thư giãn xoay ấn huyệt chẩm gáy xoa dịu stress tức thì vùng gáy.';
         rationale = 'Chào ngày đầu tiên của lộ trình 7 ngày! Cô Em nắn nót dâng sếp bài giải tỏa áp lực đỉnh đầu cực sướng nhen!';
-        selected = filterByArea(['Cổ vai gáy', 'Đầu'], 3);
+        selected = getSpecificExercises(['neck_08', 'neck_02', 'upper_06']);
+        if (selected.length < 3) {
+          selected = [...selected, ...filterByArea(['Cổ vai gáy', 'Đầu'], 3 - selected.length)];
+        }
         break;
       case 2:
         name = 'Ngày 2: Vá dãn liên sườn bả vai mỏi nhừ';
@@ -250,6 +261,9 @@ export default function App() {
       return true;
     }
   });
+
+  const [nameInput, setNameInput] = useState('');
+  const [onboardingError, setOnboardingError] = useState<string | null>(null);
 
   const handleOnboardingComplete = (name: string) => {
     setProfile(prev => ({
@@ -784,10 +798,6 @@ export default function App() {
   const planTotalDays = profile.selectedPlan === '7day' ? 7 : 3;
   const planCompletedDays = Math.min(planTotalDays, profile.completedDaysCount);
 
-  if (showNameOnboarding) {
-    return <OnboardingNameGate onComplete={handleOnboardingComplete} />;
-  }
-
   return (
     <div className="min-h-screen bg-[#fff8f5] text-[#2D3436] font-sans pb-28">
       {/* Top Header Bar with delightful Vietnamese Brand Design aesthetics */}
@@ -885,28 +895,93 @@ export default function App() {
               {/* TAB 1: TODAY EXCLUSIVE ZONE */}
               {activeTab === 'today' && (
                 <div className="space-y-6">
-                  {/* Greeting Mascot Spotlight */}
-                  <div className="bg-[#FFFBF2] border-2 border-[#7c5637] rounded-3xl p-6 shadow-md flex flex-col md:flex-row items-center gap-6">
-                    <MascotCharacter
-                      pose="expert"
-                      speechBubble={motto}
-                      className="shrink-0 scale-95"
-                      imageUrl={welcomeMascotUrl}
-                    />
-                    <div className="space-y-4 text-center md:text-left flex-1 bg-[#FFFBF2]">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-black text-[#7a5435] uppercase tracking-wider block">
-                          Chào ngày mới sảng khoái
-                        </span>
-                        <h2 className="font-extrabold text-2xl text-[#2D3436]">
-                          Hé nhô {profile.name} thân iu!
-                        </h2>
+                  {/* Greeting / Onboarding Mascot Spotlight */}
+                  {showNameOnboarding ? (
+                    <div className="bg-[#FFFBF2] border-2 border-[#7c5637] rounded-3xl p-6 shadow-md flex flex-col md:flex-row items-center gap-6">
+                      <MascotCharacter
+                        pose="expert"
+                        speechBubble="Hé lô sếp mới nha! Đi ngang thấy sếp hơi gù lưng tôm luộc là Cô Em biết ngay 'đồng nghiệp' mỏi cơ rồi. Cho Cô Em xin cái quý danh để bắt đầu lên đơn dãn cơ, cứu vớt cái cột sống quý báu này coi nè!"
+                        className="shrink-0 scale-95"
+                        imageUrl={welcomeMascotUrl}
+                      />
+                      <div className="space-y-4 text-center md:text-left flex-1 bg-[#FFFBF2]">
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-black text-[#7a5435] uppercase tracking-wider block">
+                            Quý danh sếp là gì dợ?
+                          </span>
+                          <h2 className="font-extrabold text-2xl text-[#2D3436]">
+                            Khai báo danh tánh sành điệu ✨
+                          </h2>
+                        </div>
+                        <form 
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const trimmed = nameInput.trim();
+                            if (!trimmed) {
+                              setOnboardingError('Điền đại cái tên hay nickname gì cũng được nè sếp ơi, để Cô Em biết đường gọi tên cho thân mật chớ!');
+                              return;
+                            }
+                            if (trimmed.length < 2) {
+                              setOnboardingError('Tên gì ngắn ngủn dợ cưng? Nhập ít nhất 2 ký tự để Cô Em dễ gọi tên nha.');
+                              return;
+                            }
+                            setOnboardingError(null);
+                            handleOnboardingComplete(trimmed);
+                          }}
+                          className="space-y-3 w-full"
+                        >
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <input
+                              type="text"
+                              placeholder="Nickname sếp sòng... VD: Bé Thảo Vy, Nam Lập Trình"
+                              value={nameInput}
+                              onChange={(e) => {
+                                setNameInput(e.target.value);
+                                if (onboardingError) setOnboardingError(null);
+                              }}
+                              className="flex-1 bg-white border-2 border-[#7c5637] rounded-xl px-4 py-2.5 text-xs font-bold text-[#2D3436] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#EE6C4D] transition-all"
+                            />
+                            <button
+                              type="submit"
+                              className="bg-[#EE6C4D] text-white border-2 border-[#7c5637] rounded-xl px-5 py-2.5 text-xs font-black shadow-[2px_2px_0px_0px_rgba(124,86,55,1)] hover:bg-[#EE6C4D]/90 active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_rgba(124,86,55,1)] transition-all cursor-pointer whitespace-nowrap"
+                            >
+                              Gửi Cô Em Ngay! ❤️
+                            </button>
+                          </div>
+                          {onboardingError && (
+                            <p className="text-[10px] text-red-650 font-extrabold bg-red-50 border border-red-200 rounded-lg px-2.5 py-1 inline-block">
+                              ⚠️ {onboardingError}
+                            </p>
+                          )}
+                          <p className="text-[10px] text-[#7a5435] font-black italic">
+                            "Hông khai tên là Cô Em hông phát dãn cơ cho tập đâu à nhen!"
+                          </p>
+                        </form>
                       </div>
-                      <p className="text-xs text-gray-600 leading-relaxed font-bold">
-                        U là trời, mới dực sương sương được <strong className="text-[#EE6C4D] text-sm font-black">{profile.totalMinutes} phút</strong> dãn cơ thôi đó! Ráng lo cho cái cột sống lành lặn chứ đừng gãy gánh giữa dòng deadline nha cưng!
-                      </p>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="bg-[#FFFBF2] border-2 border-[#7c5637] rounded-3xl p-6 shadow-md flex flex-col md:flex-row items-center gap-6">
+                      <MascotCharacter
+                        pose="expert"
+                        speechBubble={motto}
+                        className="shrink-0 scale-95"
+                        imageUrl={welcomeMascotUrl}
+                      />
+                      <div className="space-y-4 text-center md:text-left flex-1 bg-[#FFFBF2]">
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-black text-[#7a5435] uppercase tracking-wider block">
+                            Chào ngày mới sảng khoái
+                          </span>
+                          <h2 className="font-extrabold text-2xl text-[#2D3436]">
+                            Hé nhô {profile.name} thân iu!
+                          </h2>
+                        </div>
+                        <p className="text-xs text-gray-600 leading-relaxed font-bold">
+                          U là trời, mới dực sương sương được <strong className="text-[#EE6C4D] text-sm font-black">{profile.totalMinutes} phút</strong> dãn cơ thôi đó! Ráng lo cho cái cột sống lành lặn chứ đừng gãy gánh giữa dòng deadline nha cưng!
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   {(() => {
                     const hasCompletedToday = profile.history.some(h => {
