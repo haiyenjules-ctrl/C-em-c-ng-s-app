@@ -165,13 +165,19 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
           <div className="border-t-2 border-dashed border-[#2D3436]/40 my-4" />
 
           {/* Instructions List (Cô em chỉ bài) */}
-          <div className="space-y-1 bg-white p-4.5 rounded-2xl border-2 border-[#2D3436] shadow-[2.5px_2.5px_0px_0px_rgba(45,52,54,1)]">
-            <p className="text-xs text-slate-700 leading-relaxed font-semibold">
+          <div className="space-y-1 bg-white p-4.5 rounded-2xl border-2 border-[#2D3436] shadow-[2.5px_2.5px_0px_0px_rgba(45,52,54,1)]" id="instructions-container">
+            <div className="text-xs text-slate-700 leading-relaxed font-semibold">
               <strong className="text-[#bf7135] font-black uppercase tracking-wider text-[11px] block mb-1">
                 👉 Cô em chỉ bài:
               </strong>
-              {exercise.instructions.join(' ')}
-            </p>
+              <ul className="list-disc pl-4.5 space-y-1.5 mt-1" id="instructions-list">
+                {exercise.instructions.map((instruction, index) => (
+                  <li key={index} id={`instruction-step-${index}`}>
+                    {instruction}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* Warning / Common Mistakes callout */}
