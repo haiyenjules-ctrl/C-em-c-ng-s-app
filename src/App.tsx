@@ -125,7 +125,10 @@ export function getRoutineForPlanAndDay(
 
   const getSpecificExercises = (ids: string[]): Exercise[] => {
     return ids
-      .map(id => exercisesList.find(ex => ex.id === id))
+      .map(id => {
+        const lowerId = id.toLowerCase().trim();
+        return exercisesList.find(ex => ex.id.toLowerCase().trim() === lowerId);
+      })
       .filter((ex): ex is Exercise => !!ex);
   };
 
@@ -276,7 +279,7 @@ export default function App() {
     setShowNameOnboarding(false);
   };
 
-  const [activeRoutine, setActiveRoutine] = useState<Routine | null>(null);
+  const [activeRoutine, _setActiveRoutine] = useState<Routine | null>(null);
   const [isPlayingRoutine, setIsPlayingRoutine] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activePlaySingleExercise, setActivePlaySingleExercise] = useState<Exercise | null>(null);
@@ -314,6 +317,51 @@ export default function App() {
   const [activationSuccess, setActivationSuccess] = useState<string | null>(null);
 
   const [dbExercises, setDbExercises] = useState<Exercise[]>(EXERCISES);
+
+  const hydrateRoutineWithCatalog = (routine: Routine, catalog: Exercise[]): Routine => {
+    const hydratedExercises = routine.exercises.map(ex => {
+      const normalizedReqId = ex.id.toLowerCase().trim();
+      const catalogEx = catalog.find(c => c.id.toLowerCase().trim() === normalizedReqId);
+      if (catalogEx) {
+        return {
+          ...catalogEx,
+          id: catalogEx.id.toLowerCase(),
+          duration: ex.duration || catalogEx.duration,
+        };
+      }
+      return {
+        ...ex,
+        id: ex.id.toLowerCase()
+      };
+    });
+
+    return {
+      ...routine,
+      exercises: hydratedExercises
+    };
+  };
+
+  const setActiveRoutine = (routine: Routine | null) => {
+    if (!routine) {
+      _setActiveRoutine(null);
+      return;
+    }
+    _setActiveRoutine(hydrateRoutineWithCatalog(routine, dbExercises));
+  };
+
+  useEffect(() => {
+    if (activeRoutine && dbExercises.length > 0) {
+      const hydrated = hydrateRoutineWithCatalog(activeRoutine, dbExercises);
+      const needUpdate = activeRoutine.exercises.some((ex, i) => {
+        const hyd = hydrated.exercises[i];
+        return !hyd || ex.imageUrl !== hyd.imageUrl || ex.name !== hyd.name || ex.id !== hyd.id;
+      });
+      if (needUpdate) {
+        _setActiveRoutine(hydrated);
+      }
+    }
+  }, [dbExercises, activeRoutine]);
+
   const [dbStatus, setDbStatus] = useState({
     configured: false,
     syncing: false,

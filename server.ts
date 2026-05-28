@@ -63,7 +63,7 @@ async function getActiveExercises(): Promise<Exercise[]> {
 
     if (data && data.length > 0) {
       return data.map((row: any) => ({
-        id: row.id,
+        id: String(row.id).toLowerCase(),
         name: row.name,
         description: row.description,
         area: row.area,
@@ -252,11 +252,24 @@ Yêu cầu đầu ra:
 
     // Validate the chosen exercise IDs
     const matchedExercises: Exercise[] = [];
+    const seenIds = new Set<string>();
     if (Array.isArray(parsed.exerciseIds)) {
       parsed.exerciseIds.forEach((id: string) => {
-        const found = currentExercises.find(e => e.id === id);
+        if (!id) return;
+        const normalizedId = String(id).toLowerCase().trim();
+        if (seenIds.has(normalizedId)) return;
+
+        const found = currentExercises.find(e => {
+          const checkId = typeof e.id === "string" ? e.id.toLowerCase().trim() : String(e.id).toLowerCase().trim();
+          return checkId === normalizedId;
+        });
+
         if (found) {
-          matchedExercises.push(found);
+          seenIds.add(normalizedId);
+          matchedExercises.push({
+            ...found,
+            id: found.id.toLowerCase()
+          });
         }
       });
     }

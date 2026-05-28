@@ -61,7 +61,7 @@ export const fetchExercisesFromSupabase = async (): Promise<Exercise[]> => {
     if (data && data.length > 0) {
       // Map database snake_case fields back into our typescript camelCase Exercise schema
       return data.map((row: any) => ({
-        id: row.id,
+        id: String(row.id).toLowerCase(),
         name: row.name,
         description: row.description,
         area: row.area,
@@ -91,7 +91,7 @@ export const seedExercisesToSupabase = async (): Promise<boolean> => {
 
   try {
     const formatted = EXERCISES.map((ex) => ({
-      id: ex.id,
+      id: String(ex.id).toLowerCase(),
       name: ex.name,
       description: ex.description,
       area: ex.area,
